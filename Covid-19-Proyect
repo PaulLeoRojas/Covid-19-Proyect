@@ -1,0 +1,149 @@
+SELECT  *
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual`
+
+
+
+-- Per Location (Countries)
+
+
+
+#Total Cases vs Total Deaths (to verify death percentage of Covid-19 per location)
+
+SELECT location, population, date, total_cases, total_deaths, (total_deaths/total_cases)*100 AS death_percentage
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual`
+ORDER BY location, date
+
+
+
+#Total Cases vs Total Deaths (to verify death percentage of Covid-19 in the UK)
+
+SELECT location, population, date, total_cases, total_deaths, (total_deaths/total_cases)*100 AS death_percentage
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual`
+WHERE location= "United Kingdom"
+ORDER BY location, date
+
+
+
+#Total cases compared to the Population (percentage of people who got Covid-19 per location)
+
+SELECT location, date,population, total_cases, (total_cases/population)*100 AS covid_percentage
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual`
+ORDER BY location, date
+
+
+
+#Total cases compared to the Population (percentage of people who got Covid-19 in the UK)
+
+SELECT location, date,population, total_cases, (total_cases/population)*100 AS covid_percentage
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual`
+WHERE location= "United Kingdom"
+ORDER BY location, date
+
+
+
+#Countries with highest infection rates
+
+SELECT location, population, MAX(total_cases) as total_cases, MAX((total_cases)/population)*100 AS infection_rate
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual`
+GROUP BY population, location
+ORDER BY infection_rate DESC
+
+
+
+#UK infection rates
+
+SELECT location, population, MAX(total_cases) as total_cases, MAX((total_cases)/population)*100 AS infection_rate
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual`
+WHERE location= "United Kingdom"
+GROUP BY population, location
+ORDER BY infection_rate DESC
+
+
+
+#Highest Death Count Per Population
+
+SELECT location, MAX(CAST(total_deaths AS INT)) AS total_death_count
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual` 
+WHERE continent is not null
+GROUP BY	location
+ORDER BY total_death_count DESC
+
+
+
+-- Per Continent
+
+
+
+#Total cases of Covid-19 per Continent
+
+SELECT continent, MAX(CAST(total_cases as int)) AS cases
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual` 
+WHERE continent is null
+GROUP BY	continent
+ORDER BY cases DESC
+
+
+
+#Total Deaths of Covid-19 per Continent
+
+SELECT continent, MAX(CAST(total_deaths as int)) AS deaths
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual` 
+WHERE continent is not null
+GROUP BY	continent
+ORDER BY deaths DESC
+
+
+
+-- Globally
+
+
+
+#Death Percentage in the World (probability of dying when contracting Covid-19 globally)
+
+SELECT SUM(new_cases) as cases, SUM(CAST(new_deaths AS INT)) as deaths, SUM(CAST(new_deaths AS INT))/ SUM(new_cases) * 100 as death_percentage
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual` 
+WHERE continent is not null
+ORDER BY death_percentage DESC
+
+
+
+#Total New Cases per Date in the World
+
+SELECT date, SUM(new_cases) as cases
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual` 
+WHERE continent is not null
+GROUP BY	date
+ORDER BY cases DESC
+
+
+
+#Joining the covid_deaths and covid_vaccinations tables
+
+SELECT *
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual` deaths
+Join `portfolio-proyect-385210.covid.covid_vaccinations` vaccinations
+ on deaths.location=vaccinations.location
+ AND deaths.date=vaccinations.date
+
+
+
+#Population who got Vaccinated (Global)
+
+SELECT deaths.location, deaths.date, deaths.population, vaccinations.new_vaccinations, SUM(CAST(vaccinations.new_vaccinations AS INT)) OVER (PARTITION BY deaths.location ORDER BY deaths.location, deaths.date) AS total_vaccinations
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual` deaths
+Join `portfolio-proyect-385210.covid.covid_vaccinations` vaccinations
+ on deaths.location=vaccinations.location
+ AND deaths.date=vaccinations.date
+ WHERE deaths.continent is not null
+ ORDER BY 1, 2, 3
+ 
+ 
+ 
+ #Percentage of people who got Vaccinated (Global) (Utilising CTE to perform calculations on Partion By)
+ 
+
+
+
+
+
+
