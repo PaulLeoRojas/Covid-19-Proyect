@@ -135,7 +135,8 @@ Join `portfolio-proyect-385210.covid.covid_vaccinations` vaccinations
 
 #Population who got Vaccinated (Global)
 
-SELECT deaths.location, deaths.date, deaths.population, vaccinations.new_vaccinations, SUM(CAST(vaccinations.new_vaccinations AS INT)) OVER (PARTITION BY deaths.location ORDER BY deaths.location, deaths.date) AS total_vaccinations
+SELECT deaths.location, deaths.date, deaths.population, vaccinations.new_vaccinations, SUM(CAST(vaccinations.new_vaccinations AS INT)) 
+OVER (PARTITION BY deaths.location ORDER BY deaths.location, deaths.date) AS total_vaccinations
 FROM `portfolio-proyect-385210.covid.covid_deaths_actual` deaths
 Join `portfolio-proyect-385210.covid.covid_vaccinations` vaccinations
  on deaths.location=vaccinations.location
@@ -151,7 +152,8 @@ With popwithvaccine (Continent, Location, Date, Population, New_Vaccinations, Ro
 as
 (
 Select deaths.continent, deaths.location, deaths.date, deaths.population, vaccinations.new_vaccinations
-, SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by deaths.Location Order by deaths.location, deaths.Date) as total_vaccinations , (RollingPeopleVaccinated/population)*100
+, SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by deaths.Location Order by deaths.location, deaths.Date) as total_vaccinations , 
+(RollingPeopleVaccinated/population)*100
 FROM `portfolio-proyect-385210.covid.covid_deaths_actual` deaths
 Join `portfolio-proyect-385210.covid.covid_vaccinations` vaccinations
  on deaths.location=vaccinations.location
@@ -179,7 +181,8 @@ RollingPeopleVaccinated numeric
 
 Insert into #PercentPopulationVaccinated
 Select deaths.continent, deaths.location, deaths.date, deaths.population, vaccinations.new_vaccinations
-, SUM(CONVERT(int,vaccinations.new_vaccinations)) OVER (Partition by deaths.Location Order by deaths.location, deaths.Date) as total_vaccinations, (total_vaccinations/deaths.Population)*100
+, SUM(CONVERT(int,vaccinations.new_vaccinations)) OVER (Partition by deaths.Location Order by deaths.location, deaths.Date) as total_vaccinations, 
+(total_vaccinations/deaths.Population)*100
 FROM `portfolio-proyect-385210.covid.covid_deaths_actual` deaths
 Join `portfolio-proyect-385210.covid.covid_vaccinations` vaccinations
  on deaths.location=vaccinations.location
