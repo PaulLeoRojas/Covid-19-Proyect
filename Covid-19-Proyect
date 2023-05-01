@@ -168,18 +168,18 @@ From popwithvaccine
 
 #Performing calculations on Partition By using Temp Table
 
-DROP Table if exists #PercentPopulationVaccinated
-Create Table #PercentPopulationVaccinated
+DROP Table if exists PercentVaccinated;
+Create Table PercentVaccinated
 (
 Continent nvarchar(255),
 Location nvarchar(255),
 Date datetime,
 Population numeric,
 New_vaccinations numeric,
-RollingPeopleVaccinated numeric
+total_vaccinations numeric
 )
-
-Insert into #PercentPopulationVaccinated
+;
+Insert into PercentVaccinated
 Select deaths.continent, deaths.location, deaths.date, deaths.population, vaccinations.new_vaccinations
 , SUM(CONVERT(int,vaccinations.new_vaccinations)) OVER (Partition by deaths.Location Order by deaths.location, deaths.Date) as total_vaccinations, 
 (total_vaccinations/deaths.Population)*100
@@ -188,21 +188,21 @@ Join `portfolio-proyect-385210.covid.covid_vaccinations` vaccinations
  on deaths.location=vaccinations.location
  AND deaths.date=vaccinations.date
 where deaths.continent is not null 
-order by 2,3
+order by 2,3;
 
 Select *, (total_vaccinations/deaths.Population)*100
-From #PercentPopulationVaccinated
+From PercentVaccinated
 
 
 
 -- Creating View to store data for later visualizations
 
-Create View PercentPopulationVaccinated as
+Create View PercentVaccinated as
 Select deaths.continent, deaths.location, deaths.date, deaths.population, vaccinations.new_vaccinations
 , SUM(CONVERT(int,vaccinations.new_vaccinations)) OVER (Partition by deaths.Location Order by deaths.location, deaths.Date) as total_vaccinations
---, (total_vaccinations/population)*100
-From PortfolioProject..CovidDeaths deaths
-Join PortfolioProject..CovidVaccinations vaccinations
-	On deaths.location = vaccinations.location
-	and deaths.date = vaccinations.date
+, (total_vaccinations/population)*100
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual` deaths
+Join `portfolio-proyect-385210.covid.covid_vaccinations` vaccinations
+ on deaths.location=vaccinations.location
+ AND deaths.date=vaccinations.date
 where deaths.continent is not null
