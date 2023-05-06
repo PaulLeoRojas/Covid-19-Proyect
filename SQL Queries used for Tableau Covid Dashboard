@@ -1,0 +1,39 @@
+--SQL QUERIES USED FOR TABLEAU COVID-19 DASHBOARD
+
+#Global Values 
+
+
+SELECT SUM(new_cases) as cases, SUM(CAST(new_deaths AS INT)) as deaths, SUM(CAST(new_deaths AS INT))/ SUM(new_cases) * 100 as death_percentage
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual` 
+WHERE continent is not null
+ORDER BY death_percentage DESC
+
+
+
+#Average Deaths per Continent
+
+SELECT location, SUM(CAST(new_deaths AS INT)) AS total_death_count
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual` 
+WHERE continent is null
+AND location NOT IN ("World", "European Union", "International", "High income", "Upper middle income", "Lower middle income", "Low income")
+GROUP BY	location
+ORDER BY total_death_count DESC
+
+
+
+#Global Infection Rates
+
+SELECT location, population, date, MAX(total_cases) as total_cases, MAX((total_cases)/population)*100 AS infection_rate
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual`
+GROUP BY location, population,date
+ORDER BY infection_rate DESC
+
+
+
+Average Infection Rates per Country
+
+SELECT location, population, MAX(total_cases) as total_cases, MAX((total_cases)/population)*100 AS infection_rate
+FROM `portfolio-proyect-385210.covid.covid_deaths_actual`
+WHERE location= "United Kingdom"
+GROUP BY population, location
+ORDER BY infection_rate DESC
