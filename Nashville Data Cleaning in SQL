@@ -1,0 +1,94 @@
+--- Cleaning Data Utilising SQL
+
+SELECT  *
+FROM `portfolio-proyect-385210.nashville_housing.housing` 
+
+
+
+
+#Standarise Date Format
+
+SELECT SaleDateConverted, CONVERT(Date, SaleDate)
+FROM portfolio-proyect-385210.nashville_housing.housing
+
+UPDATE portfolio-proyect-385210.nashville_housing.housing
+SET SaleDate = CONVERT(Date, SaleDate)
+
+ALTER TABLE portfolio-proyect-385210.nashville_housing.housing
+ADD SaleDateConverted DATE;
+
+UPDATE portfolio-proyect-385210.nashville_housing.housing
+SET SaleDateConverted = CONVERT(Date, SaleDate)
+
+
+
+
+#Replace Null Values in Property Address
+
+SELECT PropertyAddress
+FROM `portfolio-proyect-385210.nashville_housing.housing` 
+WHERE PropertyAddress is null
+
+SELECT A.ParcelID, A.PropertyAddress, B.ParcelID, B.PropertyAddress, IFNULL(A.PropertyAddress, B.PropertyAddress)
+FROM `portfolio-proyect-385210.nashville_housing.housing` A
+JOIN `portfolio-proyect-385210.nashville_housing.housing` B
+ON A.ParcelID = B.ParcelID
+AND A.UniqueID_ <> B.UniqueID_
+WHERE A.PropertyAddress is null
+
+UPDATE A
+SET PropertyAddress = IFNULL(A.PropertyAddress, B.PropertyAddress)
+FROM `portfolio-proyect-385210.nashville_housing.housing` A
+JOIN `portfolio-proyect-385210.nashville_housing.housing` B
+ON A.ParcelID = B.ParcelID
+AND A.UniqueID_ <> B.UniqueID_
+WHERE A.PropertyAddress is null
+
+
+
+
+#Split Address into Different Columns
+
+SELECT 
+SPLIT(PropertyAddress, ",") [offset(0)] as Street,
+SPLIT(PropertyAddress, ",") [offset(1)] as City
+FROM `portfolio-proyect-385210.nashville_housing.housing` 
+
+ALTER TABLE portfolio-proyect-385210.nashville_housing.housing
+ADD PropertyStreetSplit Nvarchar(255);
+
+UPDATE portfolio-proyect-385210.nashville_housing.housing
+SET PropertyAddressSplit = SPLIT(PropertyAddress, ",") [offset(0)] as Street
+
+ALTER TABLE portfolio-proyect-385210.nashville_housing.housing
+ADD PropertyCitySplit Nvarchar(255);
+
+UPDATE portfolio-proyect-385210.nashville_housing.housing
+SET PropertyCitySplit = SPLIT(PropertyAddress, ",") [offset(1)] as City
+
+
+
+
+#Remove Duplicate Values
+
+WITH row_num_CTE AS(
+SELECT *, 
+ROW_NUMBER() OVER (
+  PARTITION BY ParcelID, PropertyAddress, SalePrice, SaleDate, LegalReference
+  ORDER BY UniqueID_) as row_number
+FROM `portfolio-proyect-385210.nashville_housing.housing` 
+)
+DELETE 
+FROM row_num_CTE
+WHERE row_number > 1
+
+
+
+
+#Delete Unused Columns
+
+ALTER TABLE portfolio-proyect-385210.nashville_housing.housing
+DROP COLUMN OwnerAddress,
+DROP COLUMN TaxDistrict,
+DROP COLUMN OwnerName,
+DROP COLUMN SaleDate
